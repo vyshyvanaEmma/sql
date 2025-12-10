@@ -1,0 +1,46 @@
+CREATE TABLE gruppo (
+    id_gruppo INT AUTO_INCREMENT PRIMARY KEY,
+    nome_grup VARCHAR(40) NOT NULL,
+    anno_inizio DATE NOT NULL
+);
+
+CREATE TABLE genere (
+    id_genere INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(40) NOT NULL
+);
+
+CREATE TABLE formato (
+    id_formato INT AUTO_INCREMENT PRIMARY KEY,
+    formato VARCHAR(40) NOT NULL
+);
+
+CREATE TABLE stato_conservazione (
+    id_stato INT AUTO_INCREMENT PRIMARY KEY,
+    stato VARCHAR(40) NOT NULL
+);
+
+CREATE TABLE versione (
+    id_vers INT AUTO_INCREMENT PRIMARY KEY,
+    id_formato INT NOT NULL,
+    tiratura VARCHAR(40) NOT NULL,
+    FOREIGN KEY (id_formato) REFERENCES formato(id_formato)
+);
+
+CREATE TABLE disco (
+    id_disco INT AUTO_INCREMENT PRIMARY KEY,
+    nome_disc VARCHAR(40) NOT NULL,
+    id_gruppo INT NOT NULL,
+    id_genere INT NOT NULL,
+    id_vers INT NOT NULL,
+    FOREIGN KEY (id_gruppo) REFERENCES gruppo(id_gruppo),
+    FOREIGN KEY (id_genere) REFERENCES genere(id_genere),
+    FOREIGN KEY (id_vers) REFERENCES versione(id_vers)
+);
+
+CREATE TABLE copia (
+    id_copia INT AUTO_INCREMENT PRIMARY KEY,
+    id_disco INT NOT NULL,
+    id_stato INT NOT NULL,
+    FOREIGN KEY (id_disco) REFERENCES disco(id_disco),
+    FOREIGN KEY (id_stato) REFERENCES stato_conservazione(id_stato)
+);
