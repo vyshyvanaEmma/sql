@@ -1,0 +1,32 @@
+CREATE SCHEMA gestione_fatture;
+USE gestione_fatture;
+
+CREATE TABLE categoria_rappresentante (
+    id_categoria INT AUTO_INCREMENT PRIMARY KEY,
+    nome_categoria VARCHAR(50) NOT NULL,
+    costo DECIMAL(10,2) NOT NULL
+);
+
+CREATE TABLE rappresentante (
+    id_rappresentante INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(50) NOT NULL,
+    cognome VARCHAR(50) NOT NULL,
+    id_categoria INT NOT NULL,
+    FOREIGN KEY (id_categoria) REFERENCES categoria_rappresentante(id_categoria)
+);
+
+CREATE TABLE cliente (
+    id_cliente INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(50) NOT NULL,
+    cognome VARCHAR(50) NOT NULL,
+    id_rappresentante INT NOT NULL,
+    FOREIGN KEY (id_rappresentante) REFERENCES rappresentante(id_rappresentante)
+);
+
+CREATE TABLE fattura (
+    id_fattura INT AUTO_INCREMENT PRIMARY KEY,
+    id_cliente INT NOT NULL,
+    data_fattura DATE NOT NULL,
+    importo_totale DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (id_cliente) REFERENCES cliente(id_cliente)
+);
