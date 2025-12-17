@@ -1,0 +1,43 @@
+CREATE TABLE libro(
+	id INT(20) PRIMARY KEY AUTO_INCREMENT,
+    isbn INT(13) NOT NULL,
+    titolo VARCHAR(50) NOT NULL,
+    autore VARCHAR(254) NOT NULL,
+    editore VARCHAR(100) NOT NULL
+    
+);
+
+
+CREATE TABLE copia(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    id_libro INT NOT NULL,
+    disponibile BOOLEAN NOT NULL DEFAULT 0,
+    prezzo DECIMAL(8,2) UNSIGNED,
+    num_inventario VARCHAR(255) UNIQUE NOT NULL,
+    FOREIGN KEY (id_libro) REFERENCES libro(id)
+);
+
+
+CREATE TABLE cliente(
+	id INT(20) PRIMARY KEY AUTO_INCREMENT,
+    nome VARCHAR(50) NOT NULL,
+    residenza VARCHAR(255) NOT NULL
+    
+);
+
+CREATE TABLE fornitore(
+    cf CHAR(16) PRIMARY KEY,
+    partita_iva CHAR(11) NOT NULL,
+    nome VARCHAR(100) NOT NULL,
+    indirizzo VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE ordine(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    id_libro INT NOT NULL,
+    num_copie INT NOT NULL,
+	data_emissione DATE NOT NULL,
+    cf_fornitore CHAR(16) NOT NULL,
+    FOREIGN KEY (cf_fornitore) REFERENCES fornitore(cf),
+    FOREIGN KEY (id_libro) REFERENCES libro(id)
+);
