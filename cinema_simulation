@@ -1,0 +1,163 @@
+-- Rimuovo il database se esiste
+DROP DATABASE IF EXISTS cinema_simulation;
+
+-- Creo il database
+CREATE DATABASE IF NOT EXISTS cinema_simulation;
+
+USE cinema_simulation;
+
+-- CREAZIONE DELLE TABELLE
+
+CREATE TABLE ATTORI (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    codAttore INT(20) UNSIGNED NOT NULL UNIQUE,
+    nome VARCHAR(254) NOT NULL,
+    annonascita INT NOT NULL,
+    nazionalita VARCHAR(254) NOT NULL
+);
+
+CREATE TABLE FILM (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    codFilm INT(20) UNSIGNED NOT NULL UNIQUE,
+    titolo VARCHAR(254) NOT NULL,
+    annoproduzione DATE NOT NULL,
+    nazionalita VARCHAR(254) NOT NULL,
+    regista VARCHAR(254) NOT NULL,
+    genere VARCHAR(254) NOT NULL
+);
+
+CREATE TABLE SALE (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    codSala INT(20) UNSIGNED NOT NULL UNIQUE,
+    posti INT(4) UNSIGNED NOT NULL,
+    nome VARCHAR(254) NOT NULL UNIQUE,
+    citta VARCHAR(254) NOT NULL
+);
+
+CREATE TABLE RECITA (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    codAttore INT(20) UNSIGNED NOT NULL,
+    codFilm INT(20) UNSIGNED NOT NULL,
+    FOREIGN KEY (codAttore) REFERENCES ATTORI(codAttore),
+    FOREIGN KEY (codFilm) REFERENCES FILM(codFilm)
+);
+
+CREATE TABLE PROIEZIONI (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    codProiezione INT(20) UNSIGNED NOT NULL UNIQUE,
+    incasso DECIMAL(15,2) UNSIGNED NOT NULL,
+    dataproiezione DATE NOT NULL,
+    codSala INT(20) UNSIGNED NOT NULL,
+    codFilm INT(20) UNSIGNED NOT NULL,
+    FOREIGN KEY (codSala) REFERENCES SALE(codSala),
+    FOREIGN KEY (codFilm) REFERENCES FILM(codFilm)
+);
+
+-- INSERIMENTO DATI
+
+-- Attori
+INSERT INTO ATTORI (CodAttore, Nome, AnnoNascita, Nazionalita) VALUES
+(1, 'Johnny Depp', 1963, 'USA'),
+(2, 'Meryl Streep', 1949, 'USA'),
+(3, 'Leonardo DiCaprio', 1974, 'USA'),
+(4, 'Scarlett Johansson', 1984, 'USA'),
+(5, 'Brad Pitt', 1963, 'USA'),
+(6, 'Emma Stone', 1988, 'USA'),
+(7, 'Marcello Mastroianni', 1924, 'Italia'),
+(8, 'Sofia Loren', 1934, 'Italia');
+
+-- Film
+INSERT INTO FILM (CodFilm, Titolo, AnnoProduzione, Nazionalita, Regista, Genere) VALUES
+(101, 'Pirati dei Caraibi', '2003-01-01', 'USA', 'Gore Verbinski', 'Avventura'),
+(102, 'Il Discorso del Re', '2010-01-01', 'Regno Unito', 'Tom Hooper', 'Drammatico'),
+(103, 'Inception', '2010-01-01', 'USA', 'Christopher Nolan', 'Fantascienza'),
+(104, 'La La Land', '2016-01-01', 'USA', 'Damien Chazelle', 'Musical'),
+(105, 'Fight Club', '1999-01-01', 'USA', 'David Fincher', 'Drammatico'),
+(106, 'Lost in Translation', '2003-01-01', 'USA', 'Sofia Coppola', 'Drammatico'),
+(107, 'La Dolce Vita', '1960-01-01', 'Italia', 'Federico Fellini', 'Drammatico'),
+(108, '8½', '1963-01-01', 'Italia', 'Federico Fellini', 'Drammatico'),
+(109, 'La Ciociara', '1960-01-01', 'Italia', 'Vittorio De Sica', 'Drammatico'),
+(110, 'Matrimonio all\'italiana', '1964-01-01', 'Italia', 'Vittorio De Sica', 'Commedia');
+
+-- Sale
+INSERT INTO SALE (CodSala, Posti, Nome, Citta) VALUES
+(1, 100, 'Sala A', 'Roma'),
+(2, 150, 'Sala B', 'Milano'),
+(3, 180, 'Sala C', 'Napoli'),
+(4, 220, 'Sala D', 'Firenze'),
+(5, 200, 'Sala E', 'Torino'),
+(6, 200, 'Sala F', 'Bologna'),
+(7, 200, 'Sala J', 'Pisa'),
+(8, 250, 'Sala K', 'Pisa');
+
+-- Proiezioni
+INSERT INTO PROIEZIONI (CodProiezione, CodFilm, CodSala, Incasso, DataProiezione) VALUES
+(201, 101, 1, 15000.00, '2023-10-15'),
+(202, 102, 2, 12000.00, '2023-10-16'),
+(203, 103, 3, 18000.00, '2023-10-17'),
+(204, 104, 4, 14000.00, '2023-10-18'),
+(205, 105, 5, 13000.00, '2023-10-19'),
+(206, 106, 6, 16000.00, '2023-10-20'),
+(207, 107, 7, 11000.00, '2023-10-21'),
+(208, 108, 8, 12000.00, '2023-10-22');
+
+-- Recita
+INSERT INTO RECITA (CodAttore, CodFilm) VALUES
+(1, 101),
+(2, 102),
+(3, 103),
+(4, 104),
+(5, 105),
+(6, 106),
+(7, 107),
+(8, 109);
+
+-- INTERROGAZIONI ESEMPLIFICATIVE
+
+-- 1. Sale di Pisa
+SELECT nome FROM SALE WHERE citta = 'Pisa';
+
+-- 2. Film di Fellini prodotti dopo il 1960
+SELECT titolo FROM FILM WHERE regista = 'Federico Fellini' AND annoproduzione > '1960-01-01';
+
+-- 3. Fantascienza giapponese o francese dopo il 1990
+SELECT titolo, annoproduzione FROM FILM WHERE genere='Fantascienza' AND nazionalita IN ('Giappone','Francia') AND annoproduzione > '1990-01-01';
+
+-- 4. Fantascienza giapponese dopo il 1990 oppure francese
+SELECT titolo FROM FILM WHERE (genere='Fantascienza' AND nazionalita='Giappone' AND annoproduzione>'1990-01-01') OR nazionalita='Francia';
+
+-- 5. Film proiettati il 25 dicembre 2004
+SELECT f.titolo, f.genere FROM FILM f JOIN PROIEZIONI p ON f.codFilm = p.codFilm WHERE p.dataproiezione='2004-12-25';
+
+-- 6. Film proiettati a Napoli il 25 dicembre 2004
+SELECT f.titolo, f.genere FROM FILM f JOIN PROIEZIONI p ON f.codFilm = p.codFilm JOIN SALE s ON p.codSala = s.codSala WHERE p.dataproiezione='2004-12-25' AND s.citta='Napoli';
+
+-- 7. Sale di Napoli con film di Robin Williams il 25 dicembre 2004
+SELECT DISTINCT s.nome
+FROM SALE s
+JOIN PROIEZIONI p ON s.codSala = p.codSala
+JOIN FILM f ON p.codFilm = f.codFilm
+JOIN RECITA r ON f.codFilm = r.codFilm
+JOIN ATTORI a ON r.codAttore = a.codAttore
+WHERE s.citta='Napoli' AND p.dataproiezione='2004-12-25' AND a.nome LIKE '%Robin Williams%';
+
+-- 8. Film con M. Mastroianni o S. Loren
+SELECT f.titolo
+FROM FILM f
+JOIN RECITA r ON f.codFilm = r.codFilm
+JOIN ATTORI a ON r.codAttore = a.codAttore
+WHERE a.nome IN ('Marcello Mastroianni','Sofia Loren');
+
+-- 9. Film con attore francese
+SELECT f.titolo, a.nome
+FROM FILM f
+JOIN RECITA r ON f.codFilm = r.codFilm
+JOIN ATTORI a ON r.codAttore = a.codAttore
+WHERE a.nazionalita='Francia';
+
+-- 10. Film proiettati a Pisa nel gennaio 2005
+SELECT f.titolo, s.nome
+FROM FILM f
+JOIN PROIEZIONI p ON f.codFilm = p.codFilm
+JOIN SALE s ON p.codSala = s.codSala
+WHERE s.citta='Pisa' AND p.dataproiezione BETWEEN '2005-01-01' AND '2005-01-31';
