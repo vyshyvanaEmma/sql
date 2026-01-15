@@ -1,0 +1,255 @@
+use classicmodels;
+
+-- Seleziona il nome del cliente (customerName), la città e il paese per tutti
+-- i clienti che risiedono in 'USA', 'France' o 'Poland'.
+select c.customerName customer_name, c.city, c.country 
+from customers c
+where c.county IN ('USA', 'France', 'Poland'); -- c.country = 'USA' or c.country = 'France' or c.country = 'Poland';
+
+-- Quanti ordini sono stati effettuati che hanno attualmente lo stato (status) 'Shipped'?
+select count(*) quantity_orders_shipped
+from orders o
+where o.status = 'Shipped';
+
+-- Trova il prezzo di acquisto (buyPrice) più alto presente nella tabella dei prodotti.
+select max(buyprice) max_buyPrice
+from products p;
+
+-- Calcola il prezzo medio di vendita (priceEach) di tutti i prodotti presenti
+-- nei dettagli degli ordini (orderdetails).
+select avg(priceEach) prezzo_medio_vendita
+from orderdetails;
+
+-- Estrai l'elenco di tutti gli ordini (orderNumber) insieme al nome del cliente
+-- (customerName) che ha effettuato l'ordine.
+select o.orderNumber num_ordine, c.customerName nome_cliente
+from orders o
+join customers c on o.customerNumber = c.customerNumber;
+
+-- Recupera il codice prodotto e il nome del prodotto per tutti i prodotti che appartengono
+-- alle linee (productLine) 'Classic Cars', 'Motorcycles' o 'Trucks and Buses'
+select p.productCode, p.productName 
+from products p
+WHERE p.productLine IN ('Classic Cars', 'Motorcycles', 'Trucks and Buses');
+
+-- Conta quanti dipendenti lavorano negli uffici situati in 'USA' (unendo le tabelle employees e offices)
+select o.city, count(*) num_dipendenti
+from employees e
+join offices o on e.officeCode = o.officeCode
+WHERE o.country = 'USA'
+group by o.city;
+
+-- Mostra il nome e il cognome dei dipendenti che lavorano nell'ufficio di 'Paris'.Analisi Prodotti (AVG, WHERE):
+select e.firstName, e.lastName, o.city 
+from offices o
+join employees e on o.officeCode = e.officeCode
+where o.city = 'Paris';
+
+-- Calcola il prezzo di listino medio (MSRP) per i prodotti della linea 'Ships'.Ricerca Testuale e Join (JOIN, WHERE):
+select AVG(p.msrp) prezzo_medio, pl.productLine
+from products p 
+join productlines pl on p.productline = pl.productline
+where pl.productline = 'Ships';
+
+-- Trova tutti i nomi dei prodotti ordinati dal cliente 'Atelier graphique'.
+select p.productName, c.customerName
+from products p
+join orderdetails od on p.productCode = od.productCode
+join orders o on od.orderNumber = o.orderNumber
+join customers c on o.customerNumber = c.customerNumber
+where c.customerName = 'Atelier graphique';
+
+-- 1. Visualizza tutti i dati dei clienti
+select * from customers;
+
+-- 2. Mostra il nome, il numero di telefono e la città di tutti i clienti.
+select c.customerName, c.phone, c.city
+from customers c;
+
+-- 3. Trova tutti i prodotti con quantità in magazzino superiore a 50.
+select p.productCode, p.productName, p.quantityInStock
+from products p
+where p.quantityInStock > 50;
+
+-- 4. Elenca i prodotti ordinandoli dal più costoso al meno costoso.
+select p.productCode, p.productName, p.buyPrice
+from products p
+order by p.buyPrice desc;
+
+-- 5. Mostra i nomi dei prodotti e i loro prezzi utilizzando alias per i campi.
+select p.productCode codice_prodotto, p.productName nome_prodotto, p.buyPrice prezzo_prodotto
+from products p;
+
+-- 6. Conta il numero totale di clienti.
+select distinct count(*) num_tot_customers
+from customers c;
+
+-- 7. Conta quanti clienti ci sono per ogni città.
+select c.city, count(*) quantity_for_city
+from customers c
+group by c.city;
+
+-- Elenca tutte le linee di prodotti disponibili.
+select distinct pl.productLine
+from productlines pl;
+
+-- Mostra i nomi dei prodotti, il prezzo di acquisto e il prezzo con un margine del 20%.
+select distinct p.productCode, p.productName, p.buyPrice, p.buyPrice * 1.20 prezzo_margine_20
+from products p;
+
+-- Trova tutti gli ordini e mostra il nome del cliente, l'ID dell'ordine e la data.
+select o.orderNumber, o.orderDate, c.customerName
+from customers c
+join orders o on c.customerNumber = o.customerNumber;
+
+-- Elenca il nome del cliente, il nome del prodotto e la quantità ordinata.
+select c.customerName, p.productName, od.quantityordered
+from orderdetails od
+	join orders o on od.orderNumber = o.orderNumber
+	join customers c on o.customerNumber = c.customerNumber
+	join products p on od.productCode = p.productCode
+;
+
+-- Mostra i dipendenti che lavorano nell'ufficio di San Francisco.
+select e.employeeNumber, e.firstName, e.lastName, o.city
+from offices o
+join employees e on o.officeCode = e.officeCode
+where o.city = 'San Francisco';
+
+-- Trova i dipendenti che riportano al manager con ID 1002.
+select e.employeeNumber dipendente_id, e.reportsTo manager_id
+from employees e
+where e.reportsTo = 1002;
+
+-- Calcola il totale delle vendite per ogni prodotto
+select distinct p.productCode, p.productName, sum(od.quantityordered * od.priceEach) tot_vendite
+from products p
+join orderdetails od on p.productCode = od.productCode
+group by p.productCode, p.productName;
+
+-- Elenca gli ordini con il nome del cliente e la data dell'ordine
+select o.orderNumber, o.orderDate, c.customerName
+from customers c
+join orders o on c.customerNumber = o.customerNumber;
+
+-- Mostra i nomi dei dipendenti e la città in cui lavorano.
+select e.employeeNumber, e.firstName, e.lastName, o.city
+from offices o
+join employees e on o.officeCode = e.officeCode; 
+
+--  Associa ogni prodotto alla descrizione della sua linea di prodotti.
+select distinct p.productCode, p.productName, pl.textDescription
+from productlines pl
+join products p on pl.productline = p.productline;
+
+-- Trova i dettagli di tutti gli ordini, inclusa la quantità di prodotti ordinati.
+select * from orderdetails;
+
+-- Mostra i pagamenti effettuati dai clienti, inclusi nome, importo e data
+select c.customerName, p.paymentDate, p.amount
+from customers c
+join payments p on c.customerNumber = p.customerNumber;
+
+-- Mostra tutti i clienti con il numero di ordini effettuati, inclusi quelli che non hanno effettuato ordini.
+select c.customerNumber, c.customerName, count(o.orderNumber) orders_count
+from customers c
+left join orders o on c.customerNumber = o.customerNumber
+group by c.customerNumber, c.customerName;
+
+-- Elenca tutti i dipendenti e i loro manager, mostrando NULL se un dipendente non ha manager
+select e.employeeNumber, e.firstName employee_first_name, e.lastName employee_last_name,
+		e.reportsTo managerId, m.firstName manager_first_name, m.lastName manager_last_name
+from employees e
+left join employees m on e.reportsTo = m.employeeNumber;
+
+-- Mostra tutti i prodotti, incluso quelli che non sono mai stati ordinati.
+select p.productCode, p.productName, COUNT(od.orderNumber) AS num_ordini
+from products p
+left join orderdetails od on p.productCode = od.productCode
+GROUP BY p.productCode, p.productName;
+
+-- Mostra tutte le città degli uffici e, se presenti, i nomi dei dipendenti che vi lavorano.
+select o.city, e.firstName, e.lastName
+from offices o
+left join employees e on o.officeCode = e.officeCode
+ORDER BY o.city, e.lastName;
+
+-- Mostra tutti i clienti, inclusi quelli che non hanno mai effettuato pagamenti.
+select c.customerNumber, c.customerName, p.checkNumber
+from customers c
+left join payments p on c.customerNumber = p.customerNumber;
+
+-- Elenca tutti i manager e, se presenti, i loro dipendenti.
+select e.reportsTo managerId, m.firstname manager_first_name, m.lastname manager_last_name,
+		e.employeeNumber, e.firstname employee_first_name, e.lastname employee_last_name
+from employees e
+join employees m on e.reportsTo = m.employeeNumber;
+
+-- Mostra tutti gli ordini e i clienti, inclusi i clienti senza ordini.
+select o.orderNumber, c.customerNumber, c.customerName
+from customers c
+left join orders o on c.customerNumber = o.customerNumber;
+
+-- Mostra tutti gli uffici e, se presenti, i dipendenti che vi lavorano.
+select o.officeCode, o.city, e.employeeNumber, e.firstName, e.lastName
+from offices o
+join employees e on o.officeCode = e.officeCode;
+
+-- Elenca tutti i clienti e i relativi pagamenti, mostrando NULL se il pagamento non esiste.
+select c.customerNumber, c.customerName, p.checkNumber
+from customers c
+left join payments p on c.customerNumber = p.customerNumber;
+
+-- Trova i prodotti ordinati in quantità superiore a 100.
+select p.productCode, p.productName, SUM(od.quantityOrdered) quantita_ordinata
+from products p
+join orderdetails od on p.productCode = od.productCode
+group by p.productCode, p.productName
+having SUM(od.quantityOrdered) > 100;
+
+-- Mostra tutti gli ordini che sono stati spediti.
+select o.orderNumber, o.status
+from orders o
+where o.status = 'Shipped';
+
+-- Trova i rappresentanti di vendita e le città in cui lavorano.
+select distinct e.employeeNumber salesRepId, e.firstName, e.lastName, o.city
+from employees e
+join customers c on c.salesRepEmployeeNumber = e.employeeNumber
+join offices o on e.officeCode = o.officeCode;
+
+-- Mostra i clienti che hanno effettuato ordini con un valore superiore a 1000.
+select c.customerNumber, c.customerName, sum(od.quantityOrdered * od.priceEach) tot_valore
+from orders o
+join customers c on c.customerNumber = o.customerNumber
+join orderdetails od on o.orderNumber = od.orderNumber
+group by c.customerNumber, c.customerName
+having sum(od.quantityOrdered * od.priceEach) > 1000;
+
+-- Elenca i prodotti con meno di 50 unità in magazzino e le quantità ordinate.
+select p.productCode, p.quantityInStock, sum(od.quantityOrdered) quantita_ordinata
+from products p
+join orderdetails od on p.productCode = od.productCode
+group by p.productCode, p.quantityInStock
+having p.quantityInStock < 50;
+
+-- Mostra tutte le linee di prodotti e i relativi prodotti.
+select pl.productline, p.productCode, p.productName
+from productlines pl
+left join products p on pl.productline = p.productline;
+
+-- Mostra tutti gli ordini con i codici dei prodotti, la quantità ordinata e il prezzo di ogni articolo.
+select o.orderNumber, od.productCode, od.priceEach, od.quantityOrdered
+from orders o
+join orderdetails od on o.orderNumber = od.orderNumber;
+
+-- Elenca i dipendenti che gestiscono ciascun cliente.
+select distinct c.salesRepEmployeeNumber, e.employeeNumber, e.firstName, e.lastName
+from employees e
+join customers c on e.employeeNumber = c.salesRepEmployeeNumber;
+
+-- 39. Mostra tutte le città degli uffici e i dipendenti che vi lavorano.
+select o.city, e.employeeNumber, e.firstName, e.lastname
+from offices o
+left join employees e on e.officeCode = o.officeCode;
+
