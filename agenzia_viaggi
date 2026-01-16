@@ -1,0 +1,21 @@
+create table Turista(
+	id_turista int(20) primary key auto_increment,
+    nome varchar(100) not null,
+    cognome varchar(254) not null,
+    data_nascita date not null,
+    tel varchar(16) not null
+);
+create table Viaggio(
+	id_viaggio int(20) primary key auto_increment,
+    nome_localita varchar(254) not null,
+    durata int(20) not null,
+    costo int(20) not null,
+    data_partenza date not null
+);
+create table Prenotazione(
+	id_ int(20) primary key auto_increment,
+    nome varchar(100) not null,
+    cognome varchar(254) not null,
+    data_nascita date not null,
+    tel varchar(16) not null
+);
