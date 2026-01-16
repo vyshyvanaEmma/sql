@@ -253,3 +253,160 @@ select o.city, e.employeeNumber, e.firstName, e.lastname
 from offices o
 left join employees e on e.officeCode = o.officeCode;
 
+-- Calcola il totale delle vendite per ogni ordine.
+select o.orderNumber, sum(od.quantityOrdered * priceEach) tot_vendite
+from orders o
+join orderdetails od on o.orderNumber = od.orderNumber
+group by o.orderNumber;
+
+-- Trova i prodotti ordinati dal cliente "Atelier graphique" con le relative quantità.
+select c.customerName, p.productCode, p.productName, sum(od.quantityOrdered) tot_prodotti_ordinati
+from orders o
+join orderdetails od on o.orderNumber = od.orderNumber
+join products p on p.productCode = od.productCode
+join customers c on c.customerNumber = o.customerNumber
+where c.customerName = 'Atelier graphique'
+group by c.customerName, p.productCode, p.productName;
+
+-- Mostra i manager e i dipendenti che riportano a ciascuno di essi.
+select m.employeeNumber managerId, m.firstName manager_first_name, m.lastName manager_last_name,
+		e.employeeNumber employeeID, e.firstName employee_first_name, e.lastName employee_last_name
+from employees e
+join employees m on e.reportsTo = m.employeeNumber
+group by m.employeeNumber, e.employeeNumber;
+
+-- Elenca i prodotti ordinati più frequentemente, ordinati per quantità totale.
+select p.productCode, p.productName, sum(od.quantityOrdered) quantita_ordinata
+from products p
+join orderdetails od on p.productCode = od.productCode
+group by p.productCode, p.productName
+order by sum(od.quantityOrdered) desc;
+
+-- Mostra le città degli uffici che non hanno dipendenti.
+select o.officeCode, o.city, e.employeeNumber
+from offices o
+left join employees e on o.officeCode = e.officeCode
+where e.employeeNumber is null;
+
+-- Elenca i clienti che hanno ordinato più di 3 prodotti in totale.
+select c.customerNumber, c.customerName, p.productCode, p.productName, sum(od.quantityOrdered) tot_prodotti_ordinati
+from orders o
+join orderdetails od on o.orderNumber = od.orderNumber
+join products p on p.productCode = od.productCode
+join customers c on c.customerNumber = o.customerNumber
+group by c.customerNumber, c.customerName
+having sum(od.quantityOrdered) > 3;
+
+-- Qual è il prodotto più costoso?
+select p.productCode, p.productName, p.buyPrice max_price_product
+from products p
+order by p.buyPrice desc
+limit 1;
+
+-- Mostra i clienti che non hanno mai fatto un ordine.
+select c.customerNumber, c.customerName
+from customers c 
+left join orders o on c.customerNumber = o.customerNumber
+where o.customerNumber is null;
+
+-- Quali dipendenti hanno almeno 2 subordinati?
+select m.employeeNumber managerId, m.firstName manager_first_name, m.lastName manager_last_name,
+		e.employeeNumber employeeID, e.firstName employee_first_name, e.lastName employee_last_name, e.reportsTo,
+        count(e.employeeNumber) num_subordinati
+from employees e
+join employees m on e.reportsTo = m.employeeNumber
+group by m.employeeNumber, m.firstName, m.lastName
+having count(e.employeeNumber) >= 2;
+
+-- Trova gli ordini con valore totale superiore a 1000.
+select o.orderNumber, sum(od.quantityordered * priceEach) tot_ordine
+from orders o
+join orderdetails od on o.orderNumber = od.orderNumber
+group by o.orderNumber
+having sum(od.quantityordered * priceEach) > 1000;
+
+-- Qual è il cliente che ha speso di più?
+select c.customerNumber, c.customerName, sum(od.quantityordered * priceEach) tot_spessa
+from orders o 
+join orderdetails od on o.orderNumber = od.orderNumber
+join customers c on c.customerNumber = o.customerNumber
+group by c.customerNumber
+order by sum(od.quantityordered * priceEach) desc
+limit 1;
+
+-- Trova i clienti che hanno effettuato più ordini rispetto alla media:
+select c.customerNumber, c.customerName, count(o.orderNumber) num_ordini
+from customers c
+join orders o on c.customerNumber = o.customerNumber
+group by c.customerNumber, c.customerName
+having count(o.orderNumber) > (
+	select avg(num_ordini)
+    from(
+		select count(*) num_ordini
+		from orders 
+		group by customerNumber
+	) sub
+);
+
+-- Trova i prodotti con un prezzo superiore al prezzo medio di tutti i prodotti
+select p.productCode, p.productName, p.buyPrice
+from products p 
+where p.buyPrice > (
+	select avg(p.buyprice)
+    from products p
+);
+
+-- Trova gli uffici con più dipendenti rispetto alla media
+select o.officeCode, o.city, count(e.employeeNumber) num_dipendenti
+from offices o
+join employees e on o.officecode = e.officecode
+group by o.officeCode, o.city
+having count(e.employeeNumber) > (
+	select avg(sub.num_dipendenti)
+    from(
+		select count(*) num_dipendenti
+        from employees 
+        group by officeCode
+    ) sub
+);
+
+-- Trova i manager che gestiscono più di 5 dipendenti
+select m.employeeNumber, m.firstName, m.lastName, count(e.employeeNumber) num_dipendenti
+from employees e
+join employees m on e.reportsTo = m.employeeNumber
+group by m.employeeNumber, m.firstName, m.lastName
+having count(e.employeeNumber) > 5;
+
+-- Trova i prodotti più venduti (quantità > 100)
+select p.productCode, p.productName, sum(od.quantityordered) quantita_venduta
+from products p
+join orderdetails od on p.productCode = od.productCode
+group by p.productCode, p.productName
+having sum(od.quantityordered) > 100;
+
+-- Trova gli uffici che hanno generato vendite superiori a 50.000
+select o.officeCode, o.city, sum(od.quantityordered * priceeach) tot_vendite
+from employees e
+join offices o on o.officeCode = e.officeCode
+join customers c on e.employeeNumber = c.salesRepEmployeeNumber
+join orders on c.customerNumber = orders.customerNumber
+join orderdetails od on orders.orderNumber = od.orderNumber
+group by o.officeCode, o.city
+having sum(od.quantityordered * priceeach) > 50000;
+
+-- Trova i dipendenti che hanno gestito ordini per un totale superiore a 20.000
+select e.employeeNumber, e.firstName, e.lastName, sum(od.quantityordered * priceeach) tot_vendite
+from employees e
+join customers c on e.employeeNumber = c.salesRepEmployeeNumber
+join orders on c.customerNumber = orders.customerNumber
+join orderdetails od on orders.orderNumber = od.orderNumber
+group by e.employeeNumber, e.firstName, e.lastName
+having sum(od.quantityordered * priceeach) > 20000;
+
+-- Trova le linee di prodotti con più di 3 prodotti
+select pl.productLine, count(p.productCode) tot_prodotti
+from productlines pl
+join products p on pl.productLine = p.productLine
+group by pl.productLine
+having count(p.productCode) > 3;
+
