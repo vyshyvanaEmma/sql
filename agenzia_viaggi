@@ -1,3 +1,9 @@
+drop schema if exists agenzia_viaggi;
+create schema agenzia_viaggi;
+use agenzia_viaggi;
+
+-- creazione tabbelle
+
 create table Turista(
 	id_turista int(20) primary key auto_increment,
     nome varchar(100) not null,
@@ -13,9 +19,84 @@ create table Viaggio(
     data_partenza date not null
 );
 create table Prenotazione(
-	id_ int(20) primary key auto_increment,
-    nome varchar(100) not null,
-    cognome varchar(254) not null,
-    data_nascita date not null,
-    tel varchar(16) not null
+	id_prenotazione int(20) primary key auto_increment,
+    data_prenotazione date not null,
+    tipo_pagamento varchar(16) not null,
+	id_turista int(20) not null,
+    id_viaggio int(20) not null,
+	foreign key(id_turista) references Turista(id_turista),
+    foreign key(id_viaggio) references Viaggio(id_viaggio)
 );
+
+-- inserimento dei dati
+
+insert into turista values(1, 'Mario', 'Rossi', '2004-6-01', '333 333 3333');
+insert into turista values(2, 'Francesca', 'Verdi', '2004-6-02', '444 444 4444');
+insert into turista values(3, 'Carlo', 'Rolli', '2004-6-03', '555 555 5555');
+insert into turista values(4, 'Michele', 'Gialli', '2004-6-04', '666 666 6666');
+insert into turista values(5, 'Renato', 'Rappi', '2004-6-05', '777 777 7777');
+
+insert into viaggio values(1, 'Monaco', 8, 200, '2022-1-01');
+insert into viaggio values(2, 'Vienna', 16, 400, '2022-2-02');
+insert into viaggio values(3, 'Praga', 12, 600, '2022-3-03');
+insert into viaggio values(4, 'Berlino', 12, 300, '2022-3-03');
+
+insert into prenotazione values(1, '2018-12-01', 'carta', 1, 1);
+insert into prenotazione values(2, '2022-1-02', 'carta', 1, 2);
+insert into prenotazione values(3, '2022-1-03', 'carta', 1, 4);
+
+insert into prenotazione values(4, '2018-12-20', 'contante', 2, 1);
+insert into prenotazione values(5, '2022-1-06', 'contante', 2, 2);
+
+insert into prenotazione values(6, '2022-1-03', 'carta', 3, 1);
+insert into prenotazione values(7, '2018-12-02', 'carta', 3, 2);
+
+insert into prenotazione values(8, '2022-1-04', 'contante', 4, 4);
+insert into prenotazione values(9, '2022-1-02', 'contante', 4, 2);
+
+insert into prenotazione values(10, '2022-1-04', 'carta', 5, 1);
+insert into prenotazione values(11, '2022-1-05', 'carta', 5, 4);
+insert into prenotazione values(12, '2022-1-02', 'contante', 5, 2);
+
+
+-- Trovare le informazioni dei viaggi di durata inferiore ai 15 giorni
+select v.id_viaggio , v.nome_localita, v.durata
+from viaggio v 
+where v.durata < 15;
+
+-- Trovare le diverse località dei viaggi di durata tra i 7 e i 10 giorni e di costo inferiore a 500 €
+select distinct v.nome_localita, v.durata, v.costo
+from viaggio v
+where v.durata between 7 and 10 and v.costo < 500;
+
+-- Trovare le località dei viaggi prenotate dal cliente Mario Rossi
+select v.nome_localita, t.nome, t.cognome, p.id_prenotazione
+from viaggio v
+join prenotazione p on v.id_viaggio = p.id_viaggio
+join turista t on p.id_turista = t.id_turista
+where t.nome = 'Mario' and t.cognome = 'Rossi';
+
+-- Trovare i tipi di pagamento effettuati dalla cliente Francesca Verdi
+select distinct t.nome, t.cognome, p.tipo_pagamento
+from prenotazione p
+join turista t on p.id_turista = t.id_turista
+where t.nome = 'Francesca' and t.cognome = 'Verdi';
+
+-- Trovare le località e le durate dei viaggi prenotati nel dicembre del 2018
+select v.nome_localita, v.durata, p.data_prenotazione
+from prenotazione p
+join viaggio v on p.id_viaggio = v.id_viaggio
+where year(p.data_prenotazione) = 2018 and month (p.data_prenotazione) = 12;
+
+-- Trovare tutte le informazioni anagrafiche dei turisti che hanno prenotato un viaggio a Berlino pagando con carta
+select distinct t.*
+from turista t
+join prenotazione p on t.id_turista = p.id_turista
+join viaggio v on p.id_viaggio = v.id_viaggio
+where v.nome_localita = 'Berlino' and p.tipo_pagamento = 'carta';
+
+-- Trovare le informazioni anagrafiche dei clienti il cui cognome inizia con “Ro” ordinate in ordine alfabetico
+select t.*
+from turista t
+where t.cognome like 'Ro%'
+order by t.cognome, t.nome;
