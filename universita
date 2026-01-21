@@ -1,0 +1,150 @@
+drop database if exists Universita;
+CREATE DATABASE Universita;
+
+-- Seleziona il database
+USE Universita;
+
+-- Creazione della tabella CORSIDILAUREA
+CREATE TABLE CORSIDILAUREA (
+    CorsoLaurea VARCHAR(50) PRIMARY KEY,         -- Identificativo unico del corso di laurea
+    TipoLaurea VARCHAR(50),                      -- Tipo di laurea (triennale, magistrale, ecc.)
+    Facoltà VARCHAR(100)                         -- Facoltà di appartenenza
+);
+
+-- Creazione della tabella DOCENTI
+CREATE TABLE DOCENTI (
+    CodDocente INT PRIMARY KEY AUTO_INCREMENT,   -- Identificativo del docente (auto incremento)
+    NomeD VARCHAR(100),                          -- Nome del docente
+    Dipartimento VARCHAR(100)                    -- Dipartimento del docente
+);
+
+-- Creazione della tabella CORSI
+CREATE TABLE CORSI (
+    CodCorso INT PRIMARY KEY AUTO_INCREMENT,     -- Identificativo del corso (auto incremento)
+    NomeCorso VARCHAR(100),                      -- Nome del corso
+    CodDocente INT,                              -- Riferimento al docente
+    FOREIGN KEY (CodDocente) REFERENCES DOCENTI(CodDocente)  -- Relazione con la tabella DOCENTI
+);
+
+-- Creazione della tabella STUDENTI
+CREATE TABLE STUDENTI (
+    Matricola INT PRIMARY KEY,                   -- Identificativo dello studente
+    NomeS VARCHAR(100),                          -- Nome dello studente
+    CorsoLaurea VARCHAR(50),                     -- Corso di laurea (FK)
+    AnnoN INT,                                   -- Anno di iscrizione
+    FOREIGN KEY (CorsoLaurea) REFERENCES CORSIDILAUREA(CorsoLaurea)  -- Relazione con la tabella CORSIDILAUREA
+);
+
+-- Creazione della tabella FREQUENTA (relazione molti-a-molti tra studenti e corsi)
+CREATE TABLE FREQUENTA (
+    Matricola INT,                               -- Riferimento alla matricola dello studente
+    CodCorso INT,                                -- Riferimento al corso
+    PRIMARY KEY (Matricola, CodCorso),           -- Combinazione unica di matricola e codice del corso
+    FOREIGN KEY (Matricola) REFERENCES STUDENTI(Matricola),   -- Relazione con la tabella STUDENTI
+    FOREIGN KEY (CodCorso) REFERENCES CORSI(CodCorso)         -- Relazione con la tabella CORSI
+);
+
+INSERT INTO CORSIDILAUREA (CorsoLaurea, TipoLaurea, Facoltà)
+VALUES ('SBC', 'L', 'Ingegneria'),
+       ('Matematica', 'L', 'Scienze'),
+       ('Informatica', 'M', 'Ingegneria');
+
+-- Docenti
+INSERT INTO DOCENTI (NomeD, Dipartimento)
+VALUES ('Felice', 'Informatica'),
+       ('Leoni', 'Informatica'),
+       ('Rossi', 'Ingegneria'),
+       ('Bianchi', 'Scienze');
+
+-- Corsi
+INSERT INTO CORSI (NomeCorso, CodDocente)
+VALUES ('Basi di Dati e Sistemi Informativi', 1),  -- CodDocente=1 (Felice)
+       ('Informatica Generale', 2),                -- CodDocente=2 (Leoni)
+       ('Programmazione 1', 1),                    -- CodDocente=1 (Felice)
+       ('Matematica Avanzata', 3),                 -- CodDocente=3 (Rossi)
+       ('Fisica', 4);           
+
+-- Studenti
+INSERT INTO STUDENTI (Matricola, NomeS, CorsoLaurea, AnnoN)
+VALUES (1001, 'Mario Bianchi', 'SBC', 2021),
+       (1002, 'Giuseppe Verdi', 'SBC', 2022),
+       (1003, 'Luca Neri', 'Informatica', 2023),
+       (1004, 'Sara Rossi', 'Informatica', 2023),
+       (1005, 'Francesco Gialli', 'Matematica', 2023);
+
+-- Frequenza degli studenti ai corsi
+INSERT INTO FREQUENTA (Matricola, CodCorso)
+VALUES (1001, 1),  -- Mario Bianchi frequenta "Basi di Dati e Sistemi Informativi"
+       (1001, 2),  -- Mario Bianchi frequenta "Informatica Generale"
+       (1002, 1),  -- Giuseppe Verdi frequenta "Basi di Dati e Sistemi Informativi"
+       (1003, 3),  -- Luca Neri frequenta "Programmazione 1"
+       (1004, 4),  -- Sara Rossi frequenta "Matematica Avanzata"
+       (1004, 5),  -- Sara Rossi frequenta "Fisica"
+       (1005, 2);  -- Francesco Gialli frequenta "Informatica Generale"
+       
+-- interogazione delle tabbele
+-- Il nome e l’anno di nascita degli studenti iscritti a SBC, in ordine rispetto al nome
+select s.nomeS, s.annoN
+from studenti S
+where s.corsoLaurea = 'SBC'
+order by s.nomeS;
+
+-- Il nome ed il Dipartimento dei docenti di “Basi di Dati e Sistemi Informativi” o di “Informatica Generale”
+select distinct d.nomeD, d.dipartimento
+from docenti d
+join corsi c on d.codDocente = c.codDocente
+where c.nomeCorso = 'Basi di Dati e Sistemi Informativi'
+	or c.nomeCorso = 'Informatica Generale';
+
+-- Matricola e nome degli studenti di un corso di laurea triennale (tipoLaurea ='L') che seguono un corso di un docente di nome Felice.
+select distinct s.matricola, s.nomeS
+from studenti s
+join corsidilaurea cl on s.corsoLaurea = cl.corsoLaurea
+join frequenta f on s.matricola = f.matricola
+join corsi c on f.codCorso = c.codCorso
+join docenti d on c.codDocente = d.codDocente
+where cl.tipoLaurea = 'L' and d.nomeD = 'Felice';
+
+-- Per ogni tipo di laurea, il tipoLaurea e l’età media degli studenti
+select cl.tipoLaurea, avg(year(now()) - s.AnnoN) eta_media_studenti
+from corsidilaurea cl 
+join studenti s on cl.corsoLaurea = s.corsoLaurea
+group by cl.tipoLaurea;
+
+-- Di ogni corso di un docente di nome Leoni, il CodCorso e il numero degli studenti che lo frequentano
+select c.codCorso, d.nomeD, count(f.matricola) num_studenti
+from docenti d
+join corsi c on d.codDocente = c.codDocente
+join frequenta f on c.codCorso = f.codCorso
+where d.nomeD = 'Leoni'
+group by c.codCorso;
+
+-- Il codice dei corsi frequentati da più di 5 studenti e tenuti da docenti del Dipartimento di Informatica
+select c.codCorso, count(f.matricola) num_studenti_frequantanho
+from docenti d
+join corsi c on d.codDocente = c.codDocente
+join frequenta f on c.codCorso = f.codCorso
+where d.dipartimento = 'Informatica'
+group by c.codCorso
+having count(f.matricola) > 5;
+
+-- Per ogni studente della Facoltà di Lettere e Filisofia, la matricola ed il numero di corsi seguiti
+select s.matricola, count(f.codCorso) num_corsi_seguiti
+from studenti s
+join corsidilaurea cl on s.corsoLaurea = cl.corsoLaurea
+join frequenta f on s.matricola = f.matricola
+where cl.facoltà = 'Lettere e Filosofia'
+group by s.matricola;
+
+-- Nome e CodDocente dei docenti che insegnano qualche corso seguito da più di 5 studenti
+SELECT DISTINCT d.nomeD, d.codDocente
+FROM docenti d
+JOIN corsi c ON d.codDocente = c.codDocente
+WHERE c.codCorso IN (
+    SELECT f.codCorso
+    FROM frequenta f
+    GROUP BY f.codCorso
+    HAVING COUNT(f.matricola) > 5
+);
+
+
